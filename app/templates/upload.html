@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+{% block title %}Traffic Intelligence System{% endblock %}
+{% block content %}
+<main class="main-page" id="main-page-app" data-default-tab="{{ tab or 'overview' }}">
+
+  <!-- ===================================================================== -->
+  <!-- 01: OVERVIEW DASHBOARD                                                -->
+  <!-- ===================================================================== -->
+  <section class="module-section {{ 'active' if tab != 'analyze' else '' }}" id="overview-module" aria-labelledby="h-intro-title">
+    
+    <!-- 1. Project Introduction -->
+    <div class="card intro-card">
+      <div class="intro-content">
+        <h1 class="intro-title" id="h-intro-title">Traffic Intelligence System</h1>
+        <p class="intro-desc">
+          AI-powered detection of helmet compliance, triple riding, and number plate regions from traffic videos.
+        </p>
+        <div class="intro-actions">
+          <button type="button" class="btn btn-primary" id="hero-btn-start-analysis">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            <span>Analyze Video</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Compact System Statistics (Real backend data) -->
+    <div class="section-container">
+      <h2 class="subheading">System Statistics</h2>
+      <div class="stats-compact-grid">
+        <div class="card stat-compact-card">
+          <span class="stat-compact-label">Completed Analysis Jobs</span>
+          <div class="stat-compact-val" id="dash-val-jobs">--</div>
+          <span class="stat-compact-sub">From results archive</span>
+        </div>
+
+        <div class="card stat-compact-card">
+          <span class="stat-compact-label">Total Processed Frames</span>
+          <div class="stat-compact-val font-mono" id="dash-val-frames">--</div>
+          <span class="stat-compact-sub">Decoded video frames</span>
+        </div>
+
+        <div class="card stat-compact-card">
+          <span class="stat-compact-label">Total Detections</span>
+          <div class="stat-compact-val font-mono text-blue" id="dash-val-detections">--</div>
+          <span class="stat-compact-sub">Across all classes</span>
+        </div>
+
+        <div class="card stat-compact-card">
+          <span class="stat-compact-label">Latest Analysis Duration</span>
+          <div class="stat-compact-val font-mono" id="dash-val-duration">--</div>
+          <span class="stat-compact-sub">Most recent job runtime</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Detection Classes (4 compact cards) -->
+    <div class="section-container">
+      <h2 class="subheading">Detection Classes</h2>
+      <div class="classes-compact-grid">
+        <!-- Plate -->
+        <div class="card class-compact-card border-plate">
+          <div class="class-compact-head">
+            <span class="class-badge-dot bg-plate"></span>
+            <strong class="class-compact-name text-plate">Plate</strong>
+          </div>
+          <p class="class-compact-desc">
+            Boundary localization around vehicle registration plates. Note: Plate text is not read.
+          </p>
+        </div>
+
+        <!-- WithHelmet -->
+        <div class="card class-compact-card border-with">
+          <div class="class-compact-head">
+            <span class="class-badge-dot bg-with"></span>
+            <strong class="class-compact-name text-with">WithHelmet</strong>
+          </div>
+          <p class="class-compact-desc">
+            Rider or passenger properly wearing protective headgear (compliance).
+          </p>
+        </div>
+
+        <!-- WithoutHelmet -->
+        <div class="card class-compact-card border-without">
+          <div class="class-compact-head">
+            <span class="class-badge-dot bg-without"></span>
+            <strong class="class-compact-name text-without">WithoutHelmet</strong>
+          </div>
+          <p class="class-compact-desc">
+            Rider operating without protective helmet (safety violation flagged for review).
+          </p>
+        </div>
+
+        <!-- TripleRiding -->
+        <div class="card class-compact-card border-triple">
+          <div class="class-compact-head">
+            <span class="class-badge-dot bg-triple"></span>
+            <strong class="class-compact-name text-triple">TripleRiding</strong>
+          </div>
+          <p class="class-compact-desc">
+            Three or more individuals mounted on a single two-wheeler (overcrowding violation).
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Processing Pipeline (Compact & visually clear) -->
+    <div class="section-container">
+      <h2 class="subheading">Processing Pipeline</h2>
+      <div class="card pipeline-card">
+        <div class="pipeline-flow">
+          <div class="pipeline-step">
+            <span class="step-num">1</span>
+            <span class="step-name">Video Upload</span>
+          </div>
+          <span class="pipeline-arrow">&rarr;</span>
+          <div class="pipeline-step">
+            <span class="step-num">2</span>
+            <span class="step-name">OpenCV Frame Extraction</span>
+          </div>
+          <span class="pipeline-arrow">&rarr;</span>
+          <div class="pipeline-step">
+            <span class="step-num">3</span>
+            <span class="step-name">YOLOv8 Detection</span>
+          </div>
+          <span class="pipeline-arrow">&rarr;</span>
+          <div class="pipeline-step">
+            <span class="step-num">4</span>
+            <span class="step-name">Annotated Video</span>
+          </div>
+          <span class="pipeline-arrow">&rarr;</span>
+          <div class="pipeline-step">
+            <span class="step-num">5</span>
+            <span class="step-name">Human Review</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. Recent Analyses (Real history from backend) -->
+    <div class="section-container" id="recent">
+      <div class="section-title-row">
+        <h2 class="subheading">Recent Analyses</h2>
+        <button type="button" class="btn btn-sm btn-secondary" id="btn-refresh-history">Refresh</button>
+      </div>
+
+      <div class="card history-card">
+        <div class="table-container">
+          <table class="recent-table">
+            <thead>
+              <tr>
+                <th>Video Filename</th>
+                <th>Frames</th>
+                <th>Duration</th>
+                <th>Detections</th>
+                <th>Date / Time</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="history-table-body">
+              <tr>
+                <td colspan="6" class="text-center py-4 text-muted">
+                  Loading recent analyses…
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- 02: ANALYZE VIDEO WORKSPACE                                           -->
+  <!-- ===================================================================== -->
+  <section class="module-section {{ 'active' if tab == 'analyze' else '' }}" id="analyze-module" aria-labelledby="h-analyze-title">
+    
+    <div class="page-title-row">
+      <div>
+        <h1 class="page-title" id="h-analyze-title">Analyze Video</h1>
+        <p class="page-sub">Upload video footage, adjust detection parameters, and run YOLOv8 analysis.</p>
+      </div>
+      <button type="button" class="btn btn-secondary btn-sm" id="btn-back-to-overview">
+        &larr; Back to Overview
+      </button>
+    </div>
+
+    <div class="grid-2">
+      <!-- Left Column: Video Ingestion & Preview -->
+      <section class="card" aria-labelledby="h-video">
+        <h2 class="card-title" id="h-video">Choose Video</h2>
+
+        <!-- Dropzone -->
+        <div id="dropzone" class="dropzone" tabindex="0" role="button" aria-label="Choose a video file">
+          <input id="file-input" type="file" accept="video/*,.mp4,.avi,.mov,.mkv,.webm" hidden>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="dropzone-svg" aria-hidden="true">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          <strong class="dropzone-prompt">Drop a video here, or click to choose</strong>
+          <span class="hint">Accepted: {{ extensions }}. Up to {{ max_upload_mb }} MB.</span>
+        </div>
+
+        <p id="upload-msg" class="msg" role="alert" hidden></p>
+
+        <div id="upload-progress" class="bar" hidden><i id="upload-bar"></i></div>
+
+        <div id="input-wrap" class="preview-wrap" hidden>
+          <video id="input-video" controls preload="metadata" playsinline></video>
+          <p id="input-meta" class="hint"></p>
+          <p id="input-note" class="hint text-amber" hidden>Your browser cannot preview this file's codec. Detection can still run on it.</p>
+        </div>
+      </section>
+
+      <!-- Right Column: Detection Settings -->
+      <section class="card" aria-labelledby="h-settings">
+        <h2 class="card-title" id="h-settings">Detection Settings</h2>
+
+        <form id="settings" autocomplete="off">
+          <label class="field" for="conf">
+            <div class="label-row">
+              <span>Confidence threshold</span>
+              <output id="conf-out" class="badge-output">0.25</output>
+            </div>
+            <input id="conf" type="range" min="0.05" max="0.95" step="0.05" value="0.25">
+            <small>Higher shows fewer, more certain boxes. A confident box can still be wrong.</small>
+          </label>
+
+          <label class="field" for="stride">
+            <div class="label-row">
+              <span>Run the model on</span>
+            </div>
+            <select id="stride" class="form-select">
+              <option value="1" selected>every frame (most thorough)</option>
+              <option value="2">every 2nd frame</option>
+              <option value="3">every 3rd frame</option>
+              <option value="5">every 5th frame (fastest)</option>
+            </select>
+            <small>Skipped frames reuse the last boxes in the video and are not counted.</small>
+          </label>
+
+          <details class="adv">
+            <summary>Advanced options</summary>
+            <div class="adv-body">
+              <label class="field" for="imgsz">
+                <div class="label-row">
+                  <span>Inference size</span>
+                </div>
+                <select id="imgsz" class="form-select">
+                  <option value="640" selected>640 px (fast, matches training)</option>
+                  <option value="960">960 px (slower, small plates)</option>
+                  <option value="1280">1280 px (slowest)</option>
+                </select>
+              </label>
+
+              <label class="field" for="outwidth">
+                <div class="label-row">
+                  <span>Output video size</span>
+                </div>
+                <select id="outwidth" class="form-select">
+                  <option value="1280" selected>1280 px wide (small file, fast)</option>
+                  <option value="1920">1920 px wide</option>
+                  <option value="0">Original size (4K gives very large files)</option>
+                </select>
+                <small>Detection runs on the frame at this size.</small>
+              </label>
+
+              <label class="check">
+                <input id="sanity" type="checkbox" checked>
+                <span>Hide implausible helmet boxes
+                  <small>Removes helmet boxes that cover a large part of the frame.</small>
+                </span>
+              </label>
+
+              <label class="check">
+                <input id="track" type="checkbox">
+                <span>Estimate distinct tracks (experimental)
+                  <small>Adds a tracker and approximate count of separate track IDs.</small>
+                </span>
+              </label>
+
+              <label class="check">
+                <input id="diag" type="checkbox">
+                <span>Save filter diagnostics
+                  <small>Keeps raw predictions to inspect boxes the filter removed.</small>
+                </span>
+              </label>
+            </div>
+          </details>
+
+          <button id="start" type="button" class="btn btn-primary btn-big" disabled>Start detection</button>
+          <p id="start-hint" class="hint text-center">Upload a video to continue.</p>
+          <p id="start-msg" class="msg" role="alert" hidden></p>
+        </form>
+      </section>
+    </div>
+
+    <!-- Bottom: Detection class legend -->
+    <section class="legend card" aria-labelledby="h-classes">
+      <h2 id="h-classes" class="card-title">What the model looks for</h2>
+      <ul class="classes">
+        <li style="--c: var(--plate)"><b>Plate</b><span>A box around a number plate. The text is not read.</span></li>
+        <li style="--c: var(--with)"><b>WithHelmet</b><span>A rider wearing a helmet.</span></li>
+        <li style="--c: var(--without)"><b>WithoutHelmet</b><span>A rider with no helmet.</span></li>
+        <li style="--c: var(--triple)"><b>TripleRiding</b><span>Three people on one two-wheeler.</span></li>
+      </ul>
+    </section>
+
+  </section>
+
+</main>
+{% endblock %}
+{% block scripts %}
+<script src="/static/upload.js"></script>
+{% endblock %}

@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Detection Results — Traffic Intelligence System{% endblock %}
+{% block content %}
+<main class="main-page" id="page" data-job-id="{{ job_id }}">
+
+  <!-- State 01: Initial loading indicator -->
+  <section id="state-loading" class="card center-card">
+    <div class="spinner"></div>
+    <h3 class="status-title">Loading results…</h3>
+    <p class="hint">Retrieving detection summary and video stream from server</p>
+  </section>
+
+  <!-- State 02: Processing actively -->
+  <section id="state-processing" class="card center-card" hidden aria-live="polite">
+    <h2 class="status-title">Detecting…</h2>
+    <p id="proc-file" class="text-muted proc-filename"></p>
+    <div class="bar big-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="proc-track">
+      <i id="proc-bar"></i>
+    </div>
+    <div class="proc-details-row">
+      <span id="proc-pct" class="pct font-mono">0%</span>
+      <span id="proc-detail" class="hint">Initializing YOLOv8 inference…</span>
+    </div>
+    <div class="proc-actions">
+      <button id="cancel" type="button" class="btn btn-secondary">Cancel</button>
+    </div>
+  </section>
+
+  <!-- State 03: Error state -->
+  <section id="state-error" class="card center-card error-card" hidden>
+    <h2 id="error-title" class="status-title text-without">Something went wrong</h2>
+    <p id="error-text" class="msg"></p>
+    <div class="error-actions">
+      <a class="btn btn-primary" href="/#analyze">Back to upload</a>
+    </div>
+  </section>
+
+  <!-- State 04: Completed Results & Review Console -->
+  <div id="state-done" hidden>
+    <!-- Results Title & Metadata directly above content -->
+    <div class="results-header">
+      <div>
+        <h1 class="results-title">Detection Results</h1>
+        <p id="result-file" class="results-meta"></p>
+      </div>
+      <div class="results-actions">
+        <a id="again" class="btn btn-secondary" href="/#analyze">Change settings and run again</a>
+        <a class="btn btn-primary" href="/#analyze">Upload a new video</a>
+      </div>
+    </div>
+
+    <!-- Predictions disclaimer notice -->
+    <div class="notice" role="note">
+      <strong>Predictions, not verified violations.</strong>
+      The model makes mistakes, including on helmets. Nothing here is confirmed until a person has checked the footage.
+    </div>
+
+    <!-- Summary Metrics in a compact responsive grid -->
+    <ul id="stats" class="stats"></ul>
+
+    <!-- Two-column workspace: Video playback & Class detection counts -->
+    <div class="grid-results">
+      <!-- Left Column: Video Analysis -->
+      <section class="card" aria-label="Video Playback">
+        <div class="video-topbar">
+          <div class="tabs" role="group" aria-label="Which video to show">
+            <button id="tab-annotated" type="button" aria-pressed="true" class="tab-btn">Annotated</button>
+            <button id="tab-original" type="button" aria-pressed="false" class="tab-btn" hidden>Original</button>
+          </div>
+          <a id="download" class="btn btn-sm btn-secondary" href="#" download>Download video</a>
+        </div>
+
+        <video id="video" controls preload="metadata" playsinline></video>
+        <p id="video-warning" class="msg warn" hidden></p>
+
+        <ul id="chips" class="chips" aria-label="Settings used"></ul>
+      </section>
+
+      <!-- Right Column: Frame-level detections -->
+      <section class="card" aria-labelledby="h-counts">
+        <h2 id="h-counts" class="card-title">Frame-Level Detections</h2>
+        <p class="hint">Detections are added up across the frames the model processed. A rider visible in 100 frames can be counted up to 100 times, so these are not numbers of riders or violations.</p>
+
+        <p id="zero-note" class="msg warn" hidden></p>
+
+        <ul id="counts" class="counts"></ul>
+
+        <p id="counts-foot" class="hint"></p>
+      </section>
+    </div>
+
+    <!-- Human Review Section -->
+    <section id="review-wrap" class="card" hidden aria-labelledby="h-review">
+      <div class="section-title-row">
+        <div>
+          <h2 id="h-review" class="card-title">Frames to review</h2>
+          <p class="hint">The highest-confidence WithoutHelmet and TripleRiding frames, at least two seconds apart. Inspect the original frame, record your decision, and optionally add a note. Decisions are saved separately from model predictions.</p>
+        </div>
+        <a id="reviews-csv" class="btn btn-sm btn-secondary" href="#" download>Download review log (CSV)</a>
+      </div>
+
+      <div class="review-tally-bar">
+        <p id="review-tally" class="tally"></p>
+      </div>
+
+      <ul id="review" class="review"></ul>
+    </section>
+
+    <!-- Diagnostics Section -->
+    <section id="diag-wrap" class="card" hidden aria-labelledby="h-diag">
+      <div class="section-title-row">
+        <div>
+          <h2 id="h-diag" class="card-title">Helmet-filter diagnostics</h2>
+          <p id="diag-summary" class="hint"></p>
+        </div>
+        <a id="diag-jsonl" class="btn btn-sm btn-secondary" href="#" download>Download all predictions (JSONL)</a>
+      </div>
+      <p class="hint">Grey boxes were removed by the filter; coloured boxes were kept. If grey boxes are real riders, the filter is hiding correct predictions and should be loosened.</p>
+      <ul id="diag-list" class="review"></ul>
+    </section>
+  </div>
+
+</main>
+{% endblock %}
+{% block scripts %}
+<script src="/static/results.js"></script>
+{% endblock %}

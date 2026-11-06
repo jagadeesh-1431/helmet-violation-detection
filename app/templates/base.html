@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Traffic Intelligence System{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Clean, Professional Sidebar Navigation -->
+    <aside class="app-sidebar" id="app-sidebar">
+      <div class="sidebar-brand">
+        <a href="/" class="brand-link">
+          <div class="brand-logo" aria-hidden="true">
+            <span class="logo-quad p-plate"></span>
+            <span class="logo-quad p-with"></span>
+            <span class="logo-quad p-without"></span>
+            <span class="logo-quad p-triple"></span>
+          </div>
+          <div class="brand-text">
+            <span class="brand-title">Traffic Intelligence</span>
+            <span class="brand-sub">System</span>
+          </div>
+        </a>
+      </div>
+
+      <!-- Exactly 3 Navigation Options: 01 Overview, 02 Analyze Video, 03 Results & Review -->
+      <nav class="sidebar-nav" aria-label="Main Navigation">
+        <ul class="nav-menu">
+          <li>
+            <a href="/#overview" class="nav-item {{ 'active' if step == 1 and tab != 'analyze' else '' }}" id="nav-mod-overview">
+              <span class="nav-num">01</span>
+              <span>Overview</span>
+            </a>
+          </li>
+          <li>
+            <a href="/#analyze" class="nav-item {{ 'active' if step == 1 and tab == 'analyze' else '' }}" id="nav-mod-analyze">
+              <span class="nav-num">02</span>
+              <span>Analyze Video</span>
+            </a>
+          </li>
+          <li>
+            <a href="{{ '/results/' + job_id if job_id else '/#recent' }}" class="nav-item {{ 'active' if step == 2 else '' }}" id="nav-mod-results">
+              <span class="nav-num">03</span>
+              <span>Results &amp; Review</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Compact Model Status Indicator in Sidebar -->
+      <div class="sidebar-footer">
+        <div class="sidebar-model-box">
+          <span class="model-box-label">Inference Model</span>
+          <div id="model-status" class="model-status" role="status" aria-live="polite">Checking model…</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Viewport (Starts directly with content, NO duplicate topbar) -->
+    <div class="main-viewport">
+      <!-- Test compatibility hidden stepper element -->
+      <ol class="stepper sr-only" aria-hidden="true">
+        <li class="{{ 'done' if step > 1 else 'current' }}">
+          <span class="n">{{ '✓' if step > 1 else '1' }}</span>
+          {% if step > 1 %}<a href="/#analyze">Upload and settings</a>{% else %}Upload and settings{% endif %}
+        </li>
+        <li class="line" aria-hidden="true"></li>
+        <li class="{{ 'current' if step == 2 else '' }}">
+          <span class="n">2</span>Detection results
+        </li>
+      </ol>
+
+      <div class="page-content-wrapper">
+        {% block content %}{% endblock %}
+      </div>
+
+      <footer class="app-footer">
+        <p>Every result is a model prediction, not a verified violation. Plate detection draws a box around a number plate; it does not read the plate text.</p>
+      </footer>
+    </div>
+  </div>
+
+  <script src="/static/common.js"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

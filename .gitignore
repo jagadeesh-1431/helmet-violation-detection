@@ -1,0 +1,39 @@
+# Environments
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Large or private files: do not commit
+models/*.pt
+models/*.onnx
+videos/
+uploads/*
+results/*
+data/*
+archive.zip
+*.zip
+kaggle.json
+.env
+
+# Generated report images (may contain dataset pictures); the .md reports are kept
+reports/*.jpg
+reports/*.png
+reports/eval_plots/
+
+# Keep the empty folders
+!uploads/.gitkeep
+!results/.gitkeep
+!models/.gitkeep
+!data/.gitkeep
+!reports/.gitkeep
+
+# Ultralytics scratch output
+runs/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

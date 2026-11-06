@@ -1,0 +1,5 @@
+-r requirements.txt
+pytest>=8.0
+httpx>=0.27
+# Only needed for scripts/download_dataset.py
+kaggle>=1.6
